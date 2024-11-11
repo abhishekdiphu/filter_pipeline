@@ -1,5 +1,15 @@
 
 
+# Environment:
+- install anaconda
+- install GIT
+- create a conda environment with python version >= 3.8
+- Then install all the libararies mentioned in the Requirement
+
+
+
+
+
 # Requiments
 
 - ! pip install spacy
@@ -10,13 +20,28 @@
 - Install pytorch version , with cuda 11.8 (pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118)
 - python -m spacy download en_core_web_sm
 
+- Please also see the requirement.txt
+
+# Instruction to run the code
+
+- clone the repo : git clone https://github.com/abhishekdiphu/filter_pipeline.git
+
+- go to the folder in the terminal by: cd filter_pipeline
+
+- create a anaconda environment : conda create -n scinext python=3.9
+
+- activate the anaconda environment: conda activate scinext
+
+- install all the necessary librabies: pip install -r requirements.txt
+
+- to run the whole pipeline (Task1 + Task2 + Task3 ) , please execute the script main.py using:  "python main.py"
+
+
 
 
 # Dataset:
 
-## The dataset can be accessed at Virology AI Papers Repository. It includes a header row and
-## multiple data rows generated from keyword-based searches. The list of keywords used for the searches is
-## available here.
+### The dataset can be accessed at Virology AI Papers Repository. It includes a header row and multiple data rows generated from keyword-based searches. The list of keywords used for the searches is available here.
 
 
 # Tasks
