@@ -4,6 +4,10 @@ from transformers import pipeline
 import pandas as pd
 import numpy as np
 pd.options.display.float_format = '{:,.0f}'.format
+import time
+
+from utils_for_title_extraction import *
+
 
 # PREPROCESSING STEP :
 # Load a CSV file into a DataFrame
@@ -203,11 +207,12 @@ nlp_cv_txt_mg = spacy.load("en_core_web_sm")
 classifier_2 = pipeline("zero-shot-classification",model="valhalla/distilbart-mnli-12-3")# model="facebook/bart-large-mnli")
 
 # Function to extract method sentences
-def classify_cv_txt_mng(filtered_data, candidate_labels=["computer vision", "image processing" , "natural language processing", "text mining","computer vision and natural language processing", "None" ]):
+def classify_cv_txt_mng(filtered_data, candidate_labels=["computer vision", "image processing" , "natural language processing", "text mining","computer vision and natural language processing", "others" ]):
     data_copy = filtered_data.copy(deep=True)
     data_copy["computer_vision"] = "not-used"
     data_copy["text_mining"] = "not-used"
     data_copy["computer_vision_and_text_mining"] = "not-used"
+    data_copy["others"] = "not-used"
 
 
     for index, row in data_copy.iterrows():
@@ -221,7 +226,16 @@ def classify_cv_txt_mng(filtered_data, candidate_labels=["computer vision", "ima
             result = classifier(sent.text, candidate_labels)
             print(result)
             print("abstact_label: ", abstract_label)
-            if  result["scores"][result["labels"].index("computer vision")] > 0.5 or result["scores"][result["labels"].index("image processing")] > 0.5 :
+            
+            if  0 in abstract_label and 1 in abstract_label:
+                data_copy.at[index, 'computer_vision_and_text_mining'] = "used"
+
+                print("++++++++++++++++++++both+++++++++++++++++++++++", abstract_label)
+                time.sleep(3)
+                break  # Stop processing sentences once both labels are identified for efficiency
+
+
+            elif result["scores"][result["labels"].index("computer vision")] > 0.5 or result["scores"][result["labels"].index("image processing")] > 0.5 :
                 print("cv ", result["scores"][result["labels"].index("computer vision")])
                 print("im ", result["scores"][result["labels"].index("image processing")])
                 data_copy.at[index, 'computer_vision'] = "used"  # Assign new data to each row
@@ -241,18 +255,22 @@ def classify_cv_txt_mng(filtered_data, candidate_labels=["computer vision", "ima
                 print("cv and txt ", result["scores"][result["labels"].index("computer vision and natural language processing") ])
                 data_copy.at[index, 'computer_vision_and_text_mining'] = "used"  # Assign new data to each row
                 abstract_label.append(2)
+                print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
                 break
+            
 
             # If both conditions are met, mark the "computer_vision_and_text_mining" column
-            if  0 in abstract_label and 1 in abstract_label:
-                data_copy.at[index, 'computer_vision_and_text_mining'] = "used"
-                abstract_label = []
-                break  # Stop processing sentences once both labels are identified for efficiency
-
+            
 
             #if result["scores"][result["labels"].index("natural language processing") ]> 0.5:
             #    data_copy.at[index, 'text_mining'] = "used"  # Assign new data to each row
                 #break
+        print("abstract_label: ", abstract_label)
+
+        if len(abstract_label)<1:
+            print("??????????????????????????????????????????? :", abstract_label)
+            #time.sleep(3)
+            data_copy.at[index, 'others'] = "used"
     return data_copy
 
 
@@ -260,7 +278,7 @@ clean_df_combined_dl= df_combined_dl[df_combined_dl["deep-learning-used"]=="used
 
 print(clean_df_combined_dl.describe())
 print(df_combined_dl.describe())
-classifed_pp_cv_txt_othr = classify_cv_txt_mng(clean_df_combined_dl[3000:3010])
+classifed_pp_cv_txt_othr = classify_cv_txt_mng(clean_df_combined_dl[:100])
 print(classifed_pp_cv_txt_othr.head())
 
 
@@ -332,6 +350,267 @@ print(extracted_method_df.head())
 
 print("-----------------------------------saving the final dataframe -----------------------------------")
 extracted_method_df.to_csv('final_csv_report.csv', index=False) 
+
+
+
+#========================================================================================================#
+#======================================VISUALIZATION=====================================================#
+count_used_deep_learning = (extracted_method_df['deep-learning-used']=="used").sum()
+
+print(count_used_deep_learning)
+count_used_computer_vision = extracted_method_df['computer_vision'].sum()
+
+print(count_used_computer_vision)
+
+
+
+# Load spaCy model for tokenizing sentences
+nlp = spacy.load("en_core_web_sm")
+
+# Transformer pipeline for zero-shot classification
+classifier = pipeline("zero-shot-classification",model="valhalla/distilbart-mnli-12-3")# model="facebook/bart-large-mnli")
+
+#=======================================================================================================#
+df_only_title_df = df_abstract_only_nan.copy(deep=True)
+title_df_based_pp, title_non_dl_based_pp = title_keybased_search(df_only_title_df)
+print("-------------------------filter papers included based on key-based filtration ------\n")
+print(title_df_based_pp.describe(include='all'))
+print("-------------------------papers excluded based on keybased filtration---------------\n")
+print(title_df_based_pp.describe(include='all'))
+
+#=======================================================================================================#
+title_df_nlp_based = title_classify_deep_l(title_non_dl_based_pp[:])
+print("-------------------------filter deep learning papers based on zero shot classification----------\n")
+print(title_df_nlp_based.head())
+
+title_df_dl_pp= title_df_based_pp.copy(deep= True)
+title_df_nlp_dl_pp =title_df_nlp_based.copy(deep= True)
+
+title_df_combined_dl = pd.concat([title_df_dl_pp, title_df_nlp_dl_pp], axis=0, ignore_index=True)
+# Replace all instances of 'Old_Value' with 'New_Value' in 'Column_Name'
+title_df_combined_dl['deep-learning-used']= title_df_combined_dl['deep-learning-used'].replace(np.nan, 'used')
+
+
+
+title_clean_df_combined_dl= title_df_combined_dl[title_df_combined_dl["deep-learning-used"]=="used"]
+
+title_classifed_pp_cv_txt_othr = title_classify_cv_txt_mng(title_clean_df_combined_dl[:])
+print(title_classifed_pp_cv_txt_othr.head())
+
+
+# Extract method-related sentences from titles
+title_extracted_method_df = title_find_method(title_classifed_pp_cv_txt_othr)
+print("----------------------------------- METHOD extracted from the combined dataframe---------------\n")
+print(title_extracted_method_df.head())
+
+print("-----------------------------------saving the final dataframe -----------------------------------")
+title_extracted_method_df.to_csv('title_final_csv_report.csv', index=False) 
+
+
+title_abstract_full_combined_df =pd.concat([extracted_method_df, title_extracted_method_df], 
+                                           axis=0, 
+                                           ignore_index=True) 
+
+
+print("------------------------------------------------------------------------------------------------\n")
+full_count_used_deep_learning = (title_abstract_full_combined_df['deep-learning-used']=="used").sum()
+print(full_count_used_deep_learning)
+
+full_count_used_computer_vision = title_abstract_full_combined_df['computer_vision'].sum()
+print(full_count_used_computer_vision)
+
+full_count_used_text_mining = (title_abstract_full_combined_df['text_mining']=="used").sum()
+print(full_count_used_text_mining)
+
+full_both = (title_abstract_full_combined_df['computer_vision_and_text_mining']=="used").sum()
+print(full_both)
+print("------------------------------------------------------------------------------------------------\n")
+
+
+
+import matplotlib.pyplot as plt
+
+# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
+ax = extracted_method_df['deep-learning-used'].value_counts().plot(kind='bar')
+# Customize the plot
+plt.title('Distribution of Categorical Column')
+plt.xlabel('Categories')
+plt.ylabel('Frequency')
+plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
+# Show the plot
+for p in ax.patches:
+    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
+                ha='center', va='bottom')
+plt.show()
+
+
+count_used_computer_vision = (extracted_method_df['computer_vision']=="used").sum()
+print(count_used_computer_vision)
+# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
+ax = extracted_method_df['computer_vision'].value_counts().plot(kind='bar')
+# Customize the plot
+plt.title('Distribution of computer_vision')
+plt.xlabel('Categories')
+plt.ylabel('Frequency')
+plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
+# Show the plot
+for p in ax.patches:
+    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
+                ha='center', va='bottom')
+plt.show()
+
+
+
+count_used_text_mining = (extracted_method_df['text_mining']=="used").sum()
+print(count_used_text_mining)
+# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
+ax = extracted_method_df['text_mining'].value_counts().plot(kind='bar')
+# Customize the plot
+plt.title('Distribution of text mining')
+plt.xlabel('Categories')
+plt.ylabel('Frequency')
+plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
+# Show the plot
+for p in ax.patches:
+    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
+                ha='center', va='bottom')
+plt.show()
+
+
+
+both = (extracted_method_df['computer_vision_and_text_mining']=="used").sum()
+print(both)
+# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
+ax = extracted_method_df['computer_vision_and_text_mining'].value_counts().plot(kind='bar')
+# Customize the plot
+plt.title('Distribution of computer_vision_and_text_mining')
+plt.xlabel('Categories')
+plt.ylabel('Frequency')
+plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
+# Show the plot
+for p in ax.patches:
+    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
+                ha='center', va='bottom')
+plt.show()
+
+
+others = (extracted_method_df['others']=="used").sum()
+print(others)
+# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
+ax = extracted_method_df['others'].value_counts().plot(kind='bar')
+# Customize the plot
+plt.title('Distribution of Others')
+plt.xlabel('Categories')
+plt.ylabel('Frequency')
+plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
+for p in ax.patches:
+    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
+                ha='center', va='bottom')
+# Show the plot
+plt.show()
+
+
+
+
+
+
+#====================================================================================================#
+
+
+# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
+ax = title_abstract_full_combined_df['deep-learning-used'].value_counts().plot(kind='bar')
+# Customize the plot
+plt.title('full Distribution of deep learning')
+plt.xlabel('Categories')
+plt.ylabel('Frequency')
+plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
+# Show the plot
+for p in ax.patches:
+    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
+                ha='center', va='bottom')
+plt.show()
+
+
+# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
+ax = title_abstract_full_combined_df['computer_vision'].value_counts().plot(kind='bar')
+# Customize the plot
+plt.title('full Distribution of computer_vision')
+plt.xlabel('Categories')
+plt.ylabel('Frequency')
+plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
+# Show the plot
+for p in ax.patches:
+    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
+                ha='center', va='bottom')
+plt.show()
+
+
+
+
+# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
+ax = title_abstract_full_combined_df['text_mining'].value_counts().plot(kind='bar')
+# Customize the plot
+plt.title('full Distribution of text mining')
+plt.xlabel('Categories')
+plt.ylabel('Frequency')
+plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
+# Show the plot
+for p in ax.patches:
+    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
+                ha='center', va='bottom')
+plt.show()
+
+
+
+
+# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
+ax = title_abstract_full_combined_df['computer_vision_and_text_mining'].value_counts().plot(kind='bar')
+# Customize the plot
+plt.title('full  Distribution of computer_vision_and_text_mining')
+plt.xlabel('Categories')
+plt.ylabel('Frequency')
+plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
+# Show the plot
+for p in ax.patches:
+    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
+                ha='center', va='bottom')
+plt.show()
+
+
+
+# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
+ax = title_abstract_full_combined_df['others'].value_counts().plot(kind='bar')
+# Customize the plot
+plt.title('full Distribution of Others')
+plt.xlabel('Categories')
+plt.ylabel('Frequency')
+plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
+
+# Show the plot
+for p in ax.patches:
+    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
+                ha='center', va='bottom')
+
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
