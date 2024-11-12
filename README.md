@@ -114,13 +114,16 @@ available here(https://docs.google.com/document/d/1uMkXik3B3rNnKLbZc5AyqWruTGUKd
 
 ## What are the resulting dataset statistics?
 
- - Deep learning based papers :10211 
-     - Papers that does not have the abstract:10
+ - Deep learning based papers :10,211 
+     - Papers that does not have the abstract: 11,450(total) - 10,211 = 1,239 
      - Papers that have used Computer Vision:2176
      - Papers that have used Text Mining:1673
      - Papers that have used Computer vision and text mining: 43 (these is also included in "computer vision" and "text mining")
      - papers that have used other methods: 6406
      - The graph below tells us us, how many paper have used "deep leaarining" , "computer vision" , "text mining", "computer_vision_text_mining" "others".
+
+     - papers in which abstracts are absent: 213 
+
 
 ![Description of Image](./results/plots/data_statistics.png)
 
