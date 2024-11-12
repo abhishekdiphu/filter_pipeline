@@ -463,7 +463,7 @@ nlp = spacy.load("en_core_web_sm")
 # Transformer pipeline for zero-shot classification
 classifier = pipeline("zero-shot-classification",model="valhalla/distilbart-mnli-12-3")# model="facebook/bart-large-mnli")
 
-#=======================================================================================================#
+#===================================filtration based on Titles====================================================================#
 df_only_title_df = df_abstract_only_nan.copy(deep=True)
 title_df_based_pp, title_non_dl_based_pp = title_keybased_search(df_only_title_df)
 print("-------------------------filter papers included based on key-based filtration ------\n")

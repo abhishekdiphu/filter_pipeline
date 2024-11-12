@@ -8,7 +8,9 @@
 
 
 
-
+# Hardware used:
+- Nividia RTX A200 : 4GB VRAM  
+- It took me 6-7 hours to complete the inference and get the data statistics.
 
 # Requiments
 
