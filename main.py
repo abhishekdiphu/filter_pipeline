@@ -290,7 +290,7 @@ def classify_cv_txt_mng(filtered_data, candidate_labels=["computer vision", "ima
 
     for index, row in data_copy.iterrows():
         abstract =  row['Abstract']
-        print("=================================================================================")
+        print("===========================INDEX========================================",index )
 
 
         doc = nlp(abstract)
