@@ -101,7 +101,7 @@ available here(https://docs.google.com/document/d/1uMkXik3B3rNnKLbZc5AyqWruTGUKd
 
 # Discusion:
 ## which NLP technique for filtering the papers have you used? 
-- for the first task , where  papers had to be filtered based on using deep learning used in the papers, I have used a hybrid approch. initilally i have used a keybased filtering method, where filter the papers which  has the terms mentioned in the *list-of-queries-to-pubmed.docx* . Once i filtered out all the papers which  has these keywords, i am left with 4011 papers which according to it was not deep learning based papers. Then I used zero shot classification method , and filter out deep learning papers from this subset of 4011 papers.
+- for the first task , where  papers had to be filtered based on using deep learning used in the papers, I have used a hybrid approch. initilally i have used a keybased filtering method, where filter the papers which  has the terms mentioned in the *list-of-queries-to-pubmed.docx* . Once i filtered out all the papers which  has these keywords, i am left with 4149 papers which according to it was not deep learning based papers. Then I used zero shot classification method , and filter out deep learning papers from this subset of 4149 papers.
 
 - for the second task as well , i have used zeroshot classificstion , to futher categorized the deep learning based papers into "computer vsion" , "text mining" , "both ", "others"
 
@@ -109,7 +109,7 @@ available here(https://docs.google.com/document/d/1uMkXik3B3rNnKLbZc5AyqWruTGUKd
 
 
 ## Why do you think your approach will be more effective than keywords-based filtering? 
-- When I used kezbased method only 7098 papers were classifided as  deep learnirng based papers and 4011 aprox. were classified as not deep learning papers. but when I used LLM to futher filter these 4011 papers, the zeroshot classification using LLM were futher able to detect more deep learning based papers.
+- When I used kezbased method only 7088 papers(based on abstract) were classifided as  deep learnirng based papers and 4011 aprox. were classified as not deep learning papers. but when I used LLM to futher filter these 4149 papers (based on abstract), the zeroshot classification using LLM were futher able to detect more deep learning based papers.
 
 - since I  did not want to retrain a new LLM , and in this method I can set dynamic classification labels,  it was useful for me.
 
@@ -118,6 +118,8 @@ available here(https://docs.google.com/document/d/1uMkXik3B3rNnKLbZc5AyqWruTGUKd
 
 
 ## What are the resulting dataset statistics?
+
+#### papers which abstracts are missing , i have used the title for filtration, incase abstract is present, i have used abstract for filtration process.
 
  - Deep learning based papers :10,211 
      - Papers that does use deep learning paper : 11,450(total) - 10,211 = 1,239 

@@ -114,12 +114,13 @@ def keybased_search(data):
     # Convert keywords to lowercase for case-insensitive matching
     keywords_lower = [k.lower() for k in keywords]
 
-    # Define a function to check if any keyword is in the abstract or title (if abstract is NaN)
+   
 
 
-    # Filter rows in the DataFrame based on the presence of keywords in Abstract or Title
     dl_based_papers = data[data.apply(lambda row: contains_keyword(row, keywords_lower), axis=1)]
     non_dl_based_papers = data[~data.apply(lambda row: contains_keyword(row, keywords_lower), axis=1)]
+
+    
 
     # Display first few rows of the filtered result
     print(dl_based_papers.head())
@@ -187,7 +188,7 @@ def classify_deep_l(data, candidate_labels=["deep learning", "machine learning",
         abstract = row['Abstract']
         count+=1
 
-        print("________________________________________:", count)
+        print("____________USING ABSTRACT __________________  FILTER PAPER _______________:", index)
 
 
         doc = nlp(abstract)
@@ -290,7 +291,7 @@ def classify_cv_txt_mng(filtered_data, candidate_labels=["computer vision", "ima
 
     for index, row in data_copy.iterrows():
         abstract =  row['Abstract']
-        print("===========================INDEX========================================",index )
+        print("==========USING ABSTRACT   =============== CLASSIFYING THE PAPER ================",index )
 
 
         doc = nlp(abstract)
@@ -404,7 +405,7 @@ def find_method(data, candidate_labels=["method", "result" ,"conclusion", "conte
         abstract = row['Abstract']
         method =[]
 
-        print("#####################################################################")
+        print("##### USING ABSTRACT ################## METHOD IN PAPER ################", index)
 
 
         doc = nlp(abstract)
@@ -531,100 +532,7 @@ print("-------------------------------------------------------------------------
 import matplotlib.pyplot as plt
 
 
-"""
-# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
-ax = extracted_method_df['deep-learning-used'].value_counts().plot(kind='bar')
-# Customize the plot
-plt.title('Distribution of deep-learning-used')
-plt.xlabel('Categories')
-plt.ylabel('Frequency')
-plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
-# Show the plot
-for p in ax.patches:
-    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
-                ha='center', va='bottom')
 
-
-plt.savefig("./results/plots/total_number_of_deep_learing_papers.png") 
-plt.show()
-
-
-count_used_computer_vision = (extracted_method_df['computer_vision']=="used").sum()
-print(count_used_computer_vision)
-# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
-ax = extracted_method_df['computer_vision'].value_counts().plot(kind='bar')
-# Customize the plot
-plt.title('Distribution of computer_vision')
-plt.xlabel('Categories')
-plt.ylabel('Frequency')
-plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
-# Show the plot
-for p in ax.patches:
-    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
-                ha='center', va='bottom')
-
-plt.savefig("./results/plots/total_number_of_deep_learning_papers_using_computer_vision.png") 
-
-plt.show()
-
-
-
-count_used_text_mining = (extracted_method_df['text_mining']=="used").sum()
-print(count_used_text_mining)
-# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
-ax = extracted_method_df['text_mining'].value_counts().plot(kind='bar')
-# Customize the plot
-plt.title('Distribution of text mining')
-plt.xlabel('Categories')
-plt.ylabel('Frequency')
-plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
-# Show the plot
-for p in ax.patches:
-    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
-                ha='center', va='bottom')
-plt.savefig("./results/plots/total_number_of_deep_learning_papers_using_text_mining.png") 
-
-plt.show()
-
-
-
-both = (extracted_method_df['computer_vision_and_text_mining']=="used").sum()
-print(both)
-# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
-ax = extracted_method_df['computer_vision_and_text_mining'].value_counts().plot(kind='bar')
-# Customize the plot
-plt.title('Distribution of computer_vision_and_text_mining')
-plt.xlabel('Categories')
-plt.ylabel('Frequency')
-plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
-# Show the plot
-for p in ax.patches:
-    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
-                ha='center', va='bottom')
-plt.savefig("./results/plots/total_number_of_deep_learning_papers_using_computer_vision_and_text_mining.png") 
-plt.show()
-
-
-others = (extracted_method_df['others']=="used").sum()
-print(others)
-# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
-ax = extracted_method_df['others'].value_counts().plot(kind='bar')
-# Customize the plot
-plt.title('Distribution of Others')
-plt.xlabel('Categories')
-plt.ylabel('Frequency')
-plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
-for p in ax.patches:
-    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
-                ha='center', va='bottom')
-plt.savefig("./results/plots/total_number_of_deep_learning_papers_using_other_methods.png") 
-
-# Show the plot
-plt.show()
-
-
-
-"""
 
 
 #====================================================================================================#
@@ -752,7 +660,102 @@ plt.show()
 
 
 
+#===============================================================EXAMPLE CODES======================================================================
 
+"""
+# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
+ax = extracted_method_df['deep-learning-used'].value_counts().plot(kind='bar')
+# Customize the plot
+plt.title('Distribution of deep-learning-used')
+plt.xlabel('Categories')
+plt.ylabel('Frequency')
+plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
+# Show the plot
+for p in ax.patches:
+    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
+                ha='center', va='bottom')
+
+
+plt.savefig("./results/plots/total_number_of_deep_learing_papers.png") 
+plt.show()
+
+
+count_used_computer_vision = (extracted_method_df['computer_vision']=="used").sum()
+print(count_used_computer_vision)
+# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
+ax = extracted_method_df['computer_vision'].value_counts().plot(kind='bar')
+# Customize the plot
+plt.title('Distribution of computer_vision')
+plt.xlabel('Categories')
+plt.ylabel('Frequency')
+plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
+# Show the plot
+for p in ax.patches:
+    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
+                ha='center', va='bottom')
+
+plt.savefig("./results/plots/total_number_of_deep_learning_papers_using_computer_vision.png") 
+
+plt.show()
+
+
+
+count_used_text_mining = (extracted_method_df['text_mining']=="used").sum()
+print(count_used_text_mining)
+# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
+ax = extracted_method_df['text_mining'].value_counts().plot(kind='bar')
+# Customize the plot
+plt.title('Distribution of text mining')
+plt.xlabel('Categories')
+plt.ylabel('Frequency')
+plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
+# Show the plot
+for p in ax.patches:
+    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
+                ha='center', va='bottom')
+plt.savefig("./results/plots/total_number_of_deep_learning_papers_using_text_mining.png") 
+
+plt.show()
+
+
+
+both = (extracted_method_df['computer_vision_and_text_mining']=="used").sum()
+print(both)
+# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
+ax = extracted_method_df['computer_vision_and_text_mining'].value_counts().plot(kind='bar')
+# Customize the plot
+plt.title('Distribution of computer_vision_and_text_mining')
+plt.xlabel('Categories')
+plt.ylabel('Frequency')
+plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
+# Show the plot
+for p in ax.patches:
+    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
+                ha='center', va='bottom')
+plt.savefig("./results/plots/total_number_of_deep_learning_papers_using_computer_vision_and_text_mining.png") 
+plt.show()
+
+
+others = (extracted_method_df['others']=="used").sum()
+print(others)
+# Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
+ax = extracted_method_df['others'].value_counts().plot(kind='bar')
+# Customize the plot
+plt.title('Distribution of Others')
+plt.xlabel('Categories')
+plt.ylabel('Frequency')
+plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
+for p in ax.patches:
+    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
+                ha='center', va='bottom')
+plt.savefig("./results/plots/total_number_of_deep_learning_papers_using_other_methods.png") 
+
+# Show the plot
+plt.show()
+
+
+
+"""
 
 
 
