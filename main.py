@@ -26,7 +26,7 @@ print("infromation missing for each column: ", nan_stats)
 
 
 # make a new dataframe , where only PMID Title and Abstract column is present !
-df_pmid_title_abstract = df[['PMID', 'Title', 'Abstract']]
+df_pmid_title_abstract = df#[['PMID', 'Title', 'Abstract']]
 df_pmid_title_abstract.isna().sum()
 #print("length of rows: ", df_pmid_title_abstract.shape[0])
 #print(df_pmid_title_abstract.describe(include='all'))
@@ -70,10 +70,11 @@ def contains_keyword(row, keywords_lower):
               Returns False if none of the keywords are found.
     """
 
-        # Use abstract if available, otherwise use title
-        text_to_search = str(row['Abstract']) if pd.notna(row['Abstract']) else str(row['Title'])
-        text_lower = text_to_search.lower()  # Convert to lowercase for case-insensitive matching
-        return any(keyword in text_lower for keyword in keywords_lower)
+
+    # Use abstract if available, otherwise use title
+    text_to_search = str(row['Abstract']) if pd.notna(row['Abstract']) else str(row['Title'])
+    text_lower = text_to_search.lower()  # Convert to lowercase for case-insensitive matching
+    return any(keyword in text_lower for keyword in keywords_lower)
   
 
 def keybased_search(data):
