@@ -72,13 +72,13 @@ def title_classify_deep_l(data, candidate_labels=["deep learning", "machine lear
         abstract = row['Title']
         count+=1
 
-        print("_____________________TITLE____________________________________________________:", count)
+        print("_____________________TITLE_________BASED____________________:", count)
 
 
         doc = nlp(abstract)
         for sent in doc.sents:
             result = classifier(sent.text, candidate_labels)
-            print(result)
+            #print(result)
             if  result["scores"][result["labels"].index("deep learning")] > 0.5 :
                 print("deep ", result["scores"][result["labels"].index("deep learning")])
                 data_copy.at[index, 'deep-learning-used'] = "used"  # Assign new data to each row
@@ -104,7 +104,7 @@ def title_classify_cv_txt_mng(filtered_data, candidate_labels=["computer vision"
 
     for index, row in data_copy.iterrows():
         abstract =  row['Title']
-        print("=========================================TITLE========================================")
+        print("===================USING TITLE ======== CLASSIFING THE PAPER ============================", index)
 
 
         doc = nlp(abstract)
@@ -152,7 +152,7 @@ def title_classify_cv_txt_mng(filtered_data, candidate_labels=["computer vision"
             #if result["scores"][result["labels"].index("natural language processing") ]> 0.5:
             #    data_copy.at[index, 'text_mining'] = "used"  # Assign new data to each row
                 #break
-        print("abstract_label: ", abstract_label)
+        #print("abstract_label: ", abstract_label)
 
         if len(abstract_label)<1:
             #print("??????????????????????????????????????????? :", abstract_label)
@@ -175,7 +175,7 @@ def title_find_method(data, candidate_labels=["method", "result" ,"conclusion", 
         abstract = row['Title']
         method =[]
 
-        print("####################################TITLE#################################")
+        print("############## USING TITLE ################## METHOD IN PAPER ####################", index)
 
 
         doc = nlp(abstract)
@@ -199,7 +199,7 @@ def title_find_method(data, candidate_labels=["method", "result" ,"conclusion", 
 
                 #break
         joined_method =" ".join(method)
-        print("method used :" , joined_method)
+        #print("method used :" , joined_method)
         data_copy.at[index, 'method_used'] = joined_method
 
 
