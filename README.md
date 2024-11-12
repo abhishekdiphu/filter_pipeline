@@ -25,7 +25,8 @@
 - Install pytorch version , with cuda 11.8 (pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118)
 - python -m spacy download en_core_web_sm
 
-- Please also see the requirement.txt
+- Please also see the requirement.txt 
+    - run in the terminal:  pip install -r requirements.txt
 
 # Instruction to run the code
 
