@@ -111,14 +111,14 @@ def title_classify_cv_txt_mng(filtered_data, candidate_labels=["computer vision"
         abstract_label = []
         for sent in doc.sents:
             result = classifier(sent.text, candidate_labels)
-            print(result)
+            #print(result)
             print("abstact_label: ", abstract_label)
             
             if  0 in abstract_label and 1 in abstract_label:
                 data_copy.at[index, 'computer_vision_and_text_mining'] = "used"
 
-                print("++++++++++++++++++++both+++++++++++++++++++++++", abstract_label)
-                time.sleep(3)
+                #print("++++++++++++++++++++both+++++++++++++++++++++++", abstract_label)
+                #time.sleep(3)
                 break  # Stop processing sentences once both labels are identified for efficiency
 
 
@@ -142,7 +142,7 @@ def title_classify_cv_txt_mng(filtered_data, candidate_labels=["computer vision"
                 print("cv and txt ", result["scores"][result["labels"].index("computer vision and natural language processing") ])
                 data_copy.at[index, 'computer_vision_and_text_mining'] = "used"  # Assign new data to each row
                 abstract_label.append(2)
-                print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                #print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
                 break
             
 
@@ -155,7 +155,7 @@ def title_classify_cv_txt_mng(filtered_data, candidate_labels=["computer vision"
         print("abstract_label: ", abstract_label)
 
         if len(abstract_label)<1:
-            print("??????????????????????????????????????????? :", abstract_label)
+            #print("??????????????????????????????????????????? :", abstract_label)
             #time.sleep(3)
             data_copy.at[index, 'others'] = "used"
     return data_copy
@@ -181,7 +181,7 @@ def title_find_method(data, candidate_labels=["method", "result" ,"conclusion", 
         doc = nlp(abstract)
         for sent in doc.sents:
             result = classifier(sent.text, candidate_labels)
-            print(result)
+            #print(result)
             max_score_index = result["scores"].index(max(result["scores"]))
             max_label = result["labels"][max_score_index]
             if  max_label == "method" :

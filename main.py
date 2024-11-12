@@ -28,8 +28,8 @@ print("infromation missing for each column: ", nan_stats)
 # make a new dataframe , where only PMID Title and Abstract column is present !
 df_pmid_title_abstract = df[['PMID', 'Title', 'Abstract']]
 df_pmid_title_abstract.isna().sum()
-print("length of rows: ", df_pmid_title_abstract.shape[0])
-print(df_pmid_title_abstract.describe(include='all'))
+#print("length of rows: ", df_pmid_title_abstract.shape[0])
+#print(df_pmid_title_abstract.describe(include='all'))
 
 
 #make a new dataframe after removing rows with NaN in the 'Abstract' column
@@ -37,8 +37,8 @@ pmid_title_abstract_df_cleaned = df_pmid_title_abstract.dropna(subset=['Abstract
 
 # Display the first few rows of the cleaned DataFrame
 pmid_title_abstract_df_cleaned.head()
-print(pmid_title_abstract_df_cleaned.isna().sum())
-print("length of rows: ", pmid_title_abstract_df_cleaned.shape[0])
+#print(pmid_title_abstract_df_cleaned.isna().sum())
+#print("length of rows: ", pmid_title_abstract_df_cleaned.shape[0])
 
 
 
@@ -47,7 +47,7 @@ print("length of rows: ", pmid_title_abstract_df_cleaned.shape[0])
 df_abstract_only_nan = df_pmid_title_abstract[df_pmid_title_abstract['Abstract'].isna()]
 print("length of row", df_abstract_only_nan.shape[0])
 print(df_abstract_only_nan.isna().sum())
-print(df_abstract_only_nan.head())
+#print(df_abstract_only_nan.head())
 
 
 
@@ -57,12 +57,41 @@ print(df_abstract_only_nan.head())
 ######################################################################################################
 
 def contains_keyword(row, keywords_lower):
+    """
+    This helper function checks if any of the specified keywords are present in the 'Abstract' or 'Title' of a research paper entry.
+    It is designed for use within the `keybased_search` function to help classify papers as deep learning (DL)-based or non-DL-based.
+
+    Parameters:
+        row (Series): A pandas Series representing a single row of the DataFrame, containing at least the 'Abstract' and 'Title' columns.
+        keywords_lower (list of str): A list of keywords, all in lowercase, to search for in the 'Abstract' or 'Title'.
+
+    Returns:
+        bool: Returns True if any of the keywords are found in the 'Abstract' or, if the 'Abstract' is missing (NaN), in the 'Title'.
+              Returns False if none of the keywords are found.
+    """
+
         # Use abstract if available, otherwise use title
         text_to_search = str(row['Abstract']) if pd.notna(row['Abstract']) else str(row['Title'])
         text_lower = text_to_search.lower()  # Convert to lowercase for case-insensitive matching
         return any(keyword in text_lower for keyword in keywords_lower)
+  
 
 def keybased_search(data):
+
+    '''
+    This function filters a dataset of research papers into two categories: deep learning (DL)-based papers and non-DL-based papers. 
+    It searches for specific keywords within each paper's abstract or title to determine if the paper is DL-related.
+
+    Parameters:
+        data (DataFrame): A pandas DataFrame containing research paper information with columns 'Abstract' and 'Title' , 'PMID'.
+
+    Returns:
+        dl_based_papers (DataFrame): A DataFrame containing papers identified as DL-based by the presence of certain keywords.
+        non_dl_based_papers (DataFrame): A DataFrame containing papers not identified as DL-based.
+    '''
+
+
+
   # Define the list of keywords to search within the abstract or title if abstract is NaN
     keywords = [
         'neural network', 'artificial neural network', 'machine learning model', 'feedforward neural network',
@@ -119,9 +148,7 @@ print(non_dl_based_pp.describe(include='all'))
 ######################################################################################################
 
 
-from copy import deepcopy
-import spacy
-from transformers import pipeline
+
 
 # Load spaCy model for tokenizing sentences
 nlp = spacy.load("en_core_web_sm")
@@ -131,6 +158,26 @@ classifier = pipeline("zero-shot-classification",model="valhalla/distilbart-mnli
 
 # Function to extract method sentences
 def classify_deep_l(data, candidate_labels=["deep learning", "machine learning", "not deep learning"]):
+
+
+    """
+    This function classifies research papers as "deep learning" or "machine learning" and "not deep learning" based on the content 
+    of their abstracts.It uses a natural language processing (NLP) model to assess whether each sentence in an abstract matches the 
+    candidate labels with a confidence threshold, updating the classification of each paper accordingly.
+
+    Parameters:
+        data (DataFrame): A pandas DataFrame containing research paper abstracts in the 'Abstract' column.
+        
+        candidate_labels (list of str): A list of labels used for classification, with default values 
+                                        ["deep learning", "machine learning", "not deep learning"].
+
+    Returns:
+        data_copy (DataFrame): A modified copy of the original DataFrame with an additional column 'deep-learning-used', 
+                               indicating whether the abstract contains deep learning or machine learning content 
+                               ("used" if it does, "not-used" otherwise).
+    """
+
+
     data_copy = data.copy(deep=True)
     data_copy["deep-learning-used"] = "not-used"
     count=0
@@ -145,7 +192,7 @@ def classify_deep_l(data, candidate_labels=["deep learning", "machine learning",
         doc = nlp(abstract)
         for sent in doc.sents:
             result = classifier(sent.text, candidate_labels)
-            print(result)
+            #print(result)
             if  result["scores"][result["labels"].index("deep learning")] > 0.5 :
                 print("deep ", result["scores"][result["labels"].index("deep learning")])
                 data_copy.at[index, 'deep-learning-used'] = "used"  # Assign new data to each row
@@ -162,7 +209,7 @@ def classify_deep_l(data, candidate_labels=["deep learning", "machine learning",
 # extract the papers which uses deep learning papers from the dataframe 
 #rejected by the keybased filtering method
 
-df_nlp_based = classify_deep_l(non_dl_based_pp[:100])
+df_nlp_based = classify_deep_l(non_dl_based_pp[:])
 print("-------------------------filter deep learning papers based on zero shot classification----------\n")
 print(df_nlp_based.head())
 
@@ -179,7 +226,7 @@ df_combined_dl = pd.concat([df_dl_pp, df_nlp_dl_pp], axis=0, ignore_index=True)
 print("--------------------------keybased dataframe + zero-shot-classification dataframe\n")
 print(df_combined_dl["deep-learning-used"].unique())
 #print(df_combined_dl.describe(include='object'))
-print(df_combined_dl.describe())
+#print(df_combined_dl.describe())
 print("---------------------------------------------------------------------------------\n")
 
 # set the "deep-learning-used" column as used for the dataframe extracted based on keybased filtering
@@ -201,13 +248,38 @@ df_combined_dl['deep-learning-used']= df_combined_dl['deep-learning-used'].repla
 
 
 # Load spaCy model for tokenizing sentences
-nlp_cv_txt_mg = spacy.load("en_core_web_sm")
+#nlp_cv_txt_mg = spacy.load("en_core_web_sm")
 
 # Transformer pipeline for zero-shot classification
-classifier_2 = pipeline("zero-shot-classification",model="valhalla/distilbart-mnli-12-3")# model="facebook/bart-large-mnli")
+#classifier_2 = pipeline("zero-shot-classification",model="valhalla/distilbart-mnli-12-3")# model="facebook/bart-large-mnli")
 
 # Function to extract method sentences
+
 def classify_cv_txt_mng(filtered_data, candidate_labels=["computer vision", "image processing" , "natural language processing", "text mining","computer vision and natural language processing", "others" ]):
+    
+
+    """
+    
+    This function classifies research papers based on their abstract content into categories related to computer vision, text mining, both, or others.
+    It uses a natural language processing (NLP) model to assess whether each sentence in an abstract matches specific candidate labels.
+
+    Parameters:
+        filtered_data (DataFrame): A pandas DataFrame containing research paper abstracts in the 'Abstract' column.
+        candidate_labels (list of str): A list of classification labels, defaulting to categories relevant to computer vision, text mining, 
+                                        computer vision_and_text mining, image_processing and an "others" category.
+
+    Returns:
+        data_copy (DataFrame): A modified copy of the original DataFrame with four additional columns:
+            - 'computer_vision': Marks "used" if the abstract contains computer vision or image processing-related content.
+            - 'text_mining': Marks "used" if the abstract contains text mining or NLP-related content.
+            - 'computer_vision_and_text_mining': Marks "used" if both computer vision and text mining content are present in the abstract.
+            - 'others': Marks "used" if none of the other categories are identified in the abstract.
+    """
+
+
+
+
+
     data_copy = filtered_data.copy(deep=True)
     data_copy["computer_vision"] = "not-used"
     data_copy["text_mining"] = "not-used"
@@ -224,13 +296,13 @@ def classify_cv_txt_mng(filtered_data, candidate_labels=["computer vision", "ima
         abstract_label = []
         for sent in doc.sents:
             result = classifier(sent.text, candidate_labels)
-            print(result)
+            #print(result)
             print("abstact_label: ", abstract_label)
             
             if  0 in abstract_label and 1 in abstract_label:
                 data_copy.at[index, 'computer_vision_and_text_mining'] = "used"
 
-                print("++++++++++++++++++++both+++++++++++++++++++++++", abstract_label)
+                #print("++++++++++++++++++++both+++++++++++++++++++++++", abstract_label)
                 time.sleep(3)
                 break  # Stop processing sentences once both labels are identified for efficiency
 
@@ -255,7 +327,7 @@ def classify_cv_txt_mng(filtered_data, candidate_labels=["computer vision", "ima
                 print("cv and txt ", result["scores"][result["labels"].index("computer vision and natural language processing") ])
                 data_copy.at[index, 'computer_vision_and_text_mining'] = "used"  # Assign new data to each row
                 abstract_label.append(2)
-                print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                #print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
                 break
             
 
@@ -268,7 +340,7 @@ def classify_cv_txt_mng(filtered_data, candidate_labels=["computer vision", "ima
         print("abstract_label: ", abstract_label)
 
         if len(abstract_label)<1:
-            print("??????????????????????????????????????????? :", abstract_label)
+            #print("??????????????????????????????????????????? :", abstract_label)
             #time.sleep(3)
             data_copy.at[index, 'others'] = "used"
     return data_copy
@@ -278,7 +350,7 @@ clean_df_combined_dl= df_combined_dl[df_combined_dl["deep-learning-used"]=="used
 
 print(clean_df_combined_dl.describe())
 print(df_combined_dl.describe())
-classifed_pp_cv_txt_othr = classify_cv_txt_mng(clean_df_combined_dl[:100])
+classifed_pp_cv_txt_othr = classify_cv_txt_mng(clean_df_combined_dl[:])
 print(classifed_pp_cv_txt_othr.head())
 
 
@@ -304,6 +376,25 @@ print("cv and txt mining:",classifed_pp_cv_txt_othr.computer_vision_and_text_min
 
 # Function to extract method sentences
 def find_method(data, candidate_labels=["method", "result" ,"conclusion", "context"]):
+
+    """
+    This function extracts sentences classified as describing the "method" from the abstract of each research paper.
+    It uses a natural language processing (NLP) model to classify each sentence in an abstract and collects sentences 
+    that match the "method" label.
+
+    Parameters:
+        data (DataFrame): A pandas DataFrame containing research paper abstracts in the 'Abstract' column.
+        candidate_labels (list of str): A list of classification labels, defaulting to ["method", "result", "conclusion", 
+        "context"].
+
+    Returns:
+        data_copy (DataFrame): A modified copy of the input DataFrame with an additional 'method_used' column containing 
+                               sentences from each abstract classified as "method" content.
+    """
+
+
+
+
     data_copy = data.copy(deep=True)
     data_copy["method_used"] = "none"
 
@@ -318,7 +409,7 @@ def find_method(data, candidate_labels=["method", "result" ,"conclusion", "conte
         doc = nlp(abstract)
         for sent in doc.sents:
             result = classifier(sent.text, candidate_labels)
-            print(result)
+            #print(result)
             max_score_index = result["scores"].index(max(result["scores"]))
             max_label = result["labels"][max_score_index]
             if  max_label == "method" :
@@ -336,7 +427,7 @@ def find_method(data, candidate_labels=["method", "result" ,"conclusion", "conte
 
                 #break
         joined_method =" ".join(method)
-        print("method used :" , joined_method)
+        #print("method used :" , joined_method)
         data_copy.at[index, 'method_used'] = joined_method
 
 
@@ -349,12 +440,13 @@ print("----------------------------------- METHOD extracted from the combined da
 print(extracted_method_df.head())
 
 print("-----------------------------------saving the final dataframe -----------------------------------")
-extracted_method_df.to_csv('final_csv_report.csv', index=False) 
+extracted_method_df.to_csv('./results/final_csv/final_csv_report.csv', index=False) 
 
 
 
 #========================================================================================================#
 #======================================VISUALIZATION=====================================================#
+print("======================================VISUALIZATION=============================================\n")
 count_used_deep_learning = (extracted_method_df['deep-learning-used']=="used").sum()
 
 print(count_used_deep_learning)
@@ -412,11 +504,15 @@ title_abstract_full_combined_df =pd.concat([extracted_method_df, title_extracted
                                            ignore_index=True) 
 
 
-print("------------------------------------------------------------------------------------------------\n")
+print("-----------------------------------saving the final dataframe -----------------------------------")
+title_abstract_full_combined_df.to_csv('./results/final_csv/full_final_csv_report.csv', index=False) 
+
+
+print("---------------------------------title-abstract--------------------------------------------------------------\n")
 full_count_used_deep_learning = (title_abstract_full_combined_df['deep-learning-used']=="used").sum()
 print(full_count_used_deep_learning)
 
-full_count_used_computer_vision = title_abstract_full_combined_df['computer_vision'].sum()
+full_count_used_computer_vision = (title_abstract_full_combined_df['computer_vision']=="used").sum()
 print(full_count_used_computer_vision)
 
 full_count_used_text_mining = (title_abstract_full_combined_df['text_mining']=="used").sum()
@@ -424,16 +520,21 @@ print(full_count_used_text_mining)
 
 full_both = (title_abstract_full_combined_df['computer_vision_and_text_mining']=="used").sum()
 print(full_both)
+
+full_others = (title_abstract_full_combined_df['others']=="used").sum()
+print(full_others)
 print("------------------------------------------------------------------------------------------------\n")
 
 
 
 import matplotlib.pyplot as plt
 
+
+"""
 # Assuming 'df' is your DataFrame and 'column_name' is the name of the categorical column
 ax = extracted_method_df['deep-learning-used'].value_counts().plot(kind='bar')
 # Customize the plot
-plt.title('Distribution of Categorical Column')
+plt.title('Distribution of deep-learning-used')
 plt.xlabel('Categories')
 plt.ylabel('Frequency')
 plt.xticks(rotation=45)  # Rotate category labels for better readability if needed
@@ -441,6 +542,9 @@ plt.xticks(rotation=45)  # Rotate category labels for better readability if need
 for p in ax.patches:
     ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
                 ha='center', va='bottom')
+
+
+plt.savefig("./results/plots/total_number_of_deep_learing_papers.png") 
 plt.show()
 
 
@@ -457,6 +561,9 @@ plt.xticks(rotation=45)  # Rotate category labels for better readability if need
 for p in ax.patches:
     ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
                 ha='center', va='bottom')
+
+plt.savefig("./results/plots/total_number_of_deep_learning_papers_using_computer_vision.png") 
+
 plt.show()
 
 
@@ -474,6 +581,8 @@ plt.xticks(rotation=45)  # Rotate category labels for better readability if need
 for p in ax.patches:
     ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
                 ha='center', va='bottom')
+plt.savefig("./results/plots/total_number_of_deep_learning_papers_using_text_mining.png") 
+
 plt.show()
 
 
@@ -491,6 +600,7 @@ plt.xticks(rotation=45)  # Rotate category labels for better readability if need
 for p in ax.patches:
     ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
                 ha='center', va='bottom')
+plt.savefig("./results/plots/total_number_of_deep_learning_papers_using_computer_vision_and_text_mining.png") 
 plt.show()
 
 
@@ -506,12 +616,14 @@ plt.xticks(rotation=45)  # Rotate category labels for better readability if need
 for p in ax.patches:
     ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
                 ha='center', va='bottom')
+plt.savefig("./results/plots/total_number_of_deep_learning_papers_using_other_methods.png") 
+
 # Show the plot
 plt.show()
 
 
 
-
+"""
 
 
 #====================================================================================================#
@@ -528,6 +640,7 @@ plt.xticks(rotation=45)  # Rotate category labels for better readability if need
 for p in ax.patches:
     ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
                 ha='center', va='bottom')
+plt.savefig("./results/plots/full_dataset_total_number_of_deep_learing_papers.png") 
 plt.show()
 
 
@@ -542,6 +655,8 @@ plt.xticks(rotation=45)  # Rotate category labels for better readability if need
 for p in ax.patches:
     ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
                 ha='center', va='bottom')
+plt.savefig("./results/plots/full_total_number_of_deep_learning_papers_using_computer_vision.png") 
+
 plt.show()
 
 
@@ -558,6 +673,8 @@ plt.xticks(rotation=45)  # Rotate category labels for better readability if need
 for p in ax.patches:
     ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
                 ha='center', va='bottom')
+plt.savefig("./results/plots/full_total_number_of_deep_learning_papers_using_text_mining.png") 
+
 plt.show()
 
 
@@ -574,6 +691,8 @@ plt.xticks(rotation=45)  # Rotate category labels for better readability if need
 for p in ax.patches:
     ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
                 ha='center', va='bottom')
+plt.savefig("./results/plots/full_total_number_of_deep_learning_papers_using_computer_vision_and_text_mining.png") 
+
 plt.show()
 
 
@@ -591,8 +710,41 @@ for p in ax.patches:
     ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
                 ha='center', va='bottom')
 
+plt.savefig("./results/plots/full_total_number_of_deep_learning_papers_using_other_methods.png") 
+
 plt.show()
 
+
+#----------------------------------------------------------------------------------------------------------------------------#
+
+# DATASET FULL STATISTICS VIUSALIZATION
+
+# Specify the columns to analyze
+selected_columns = ['deep-learning-used', 'computer_vision', 'text_mining', 'computer_vision_and_text_mining', 'others']
+
+# Count the occurrences of "used" in each selected column
+category_counts = title_abstract_full_combined_df[selected_columns].apply(lambda x: x.value_counts().get('used', 0))
+
+# Plotting
+plt.figure(figsize=(10, 6))
+ax = category_counts.plot(kind='bar')
+
+# Customize the plot
+plt.title("Frequency of used 'deep-learning-used', 'computer_vision', 'text_mining', 'computer_vision_and_text_mining', 'others")
+plt.xlabel('Categories')
+plt.ylabel('Frequency')
+plt.xticks(rotation=45)
+
+# Annotate the bars with frequency values
+for p in ax.patches:
+    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height()),
+                ha='center', va='bottom')
+
+plt.tight_layout()
+plt.savefig("./results/plots/data_statistics.png") 
+
+# Show the plot
+plt.show()
 
 
 

@@ -44,17 +44,34 @@
 ### The dataset can be accessed at Virology AI Papers Repository. It includes a header row and multiple data rows generated from keyword-based searches. The list of keywords used for the searches is available here.
 
 
-# Tasks
+# Tasks: Screening Task, Semantic NLP Filtering for Deep Learning Papers in Virology/Epidemiology
 
 
 ## Task 1:Implement semantic natural language processing techniques to filter out papers that do not meet the criteria of utilizing deep learning approaches in virology/epidemiology.
 
 - step 1: preprocessing the dataset, and removed rows that has NaN in the Abstract column
 - step 2: prepared a new dataframe , which has only "PMID" , "Title" , "Abstract" column where NAN rows are droped from 
-- step 3:  
+- step 3: used keyword based filtering method (rule based)
+
+- step 4: using a LLM , used zeroshot classification to either deep learning, machine leanring or non deep learning
 
 
 ## Task 2: For the papers deemed relevant, classify them according to the type of method used: ["text mining", "computer vision", "both", "other"].
+
+- step 1: using a LLM , used zeroshot classification to "text mining", "computer vision", "image processsing", "text mining_and_computer vision", "others", "natural language processing"
+
+- "computer vision", "image processsing"  is categorized as "computer vision".
+
+- "text mining", "natural language processing"  is categorized as "text mining".
+
+- if both computer vision and text mining exist, then , it is set to "computer_vision_and_text_mining"
+
+- if non of them exist set it to "others"
+
+
+
+
+
 
 
 
@@ -62,11 +79,19 @@
 
 ## Task 3: Extract and report the name of the method used for each relevant paper.
 
+- step 1: using a LLM , used zeroshot classification to "method", "result" ,"conclusion", "context"
+
+- sequences of sentences classified as method in each abstract are joined and saved in a seperate column "method_used"
+
+
+
 
 # Results 
+- 
 -
 -
--
+![Description of Image](./results/plots/data_statistics.png)
+
 
 
 # Discusion:
