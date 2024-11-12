@@ -12,6 +12,9 @@
 - Nividia RTX A200 : 4GB VRAM  
 - It took me 6-7 hours to complete the inference and get the data statistics.
 
+# Large language model used:
+- DistilBart-MNLI("https://huggingface.co/valhalla/distilbart-mnli-12-3")
+
 # Requiments
 
 - ! pip install spacy
